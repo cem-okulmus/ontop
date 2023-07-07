@@ -1,0 +1,17 @@
+CREATE TABLE EMPLOYEE_HISTORY (
+    EMPNO   INT,
+    SALARY  INT             NOT NULL,
+    TITLE   VARCHAR(100)    NOT NULL,
+    DEPTNO  VARCHAR(30)     NOT NULL,
+    TSTART  DATE,
+    TEND    DATE,
+    PRIMARY KEY(EMPNO,TSTART,TEND)
+);
+
+
+INSERT INTO EMPLOYEE_HISTORY (EMPNO, SALARY, TITLE, DEPTNO, TSTART, TEND) VALUES
+    (1001, 60000, 'Engineer',       'd01', '1995-01-01', '1995-05-31'),
+    (1001, 70000, 'Engineer',       'd01', '1995-06-01', '1995-09-30'),
+    (1001, 70000, 'Sr. Engineer',   'd02', '1995-10-01', '1996-01-31'),
+    (1001, 70000, 'Tech Leader',    'd02', '1996-02-01', '1996-12-31');
+

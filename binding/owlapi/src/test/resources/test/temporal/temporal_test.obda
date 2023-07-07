@@ -1,0 +1,35 @@
+[PrefixDeclaration]
+:		http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#
+owl:		http://www.w3.org/2002/07/owl#
+rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
+xml:		http://www.w3.org/XML/1998/namespace
+xsd:		http://www.w3.org/2001/XMLSchema#
+obda:		https://w3id.org/obda/vocabulary#
+rdfs:		http://www.w3.org/2000/01/rdf-schema#
+quest:		http://obda.org/quest#
+time:       http://www.w3.org/2006/time#
+
+[MappingDeclaration] @collection [[
+
+mappingId	MAPID-interval
+target		:interval/{tstart}-{tend} time:hasTime :timeInt/{tstart}-{tend}. :timeInt/{tstart}-{tend} a time:Interval. :timeInt/{tstart}-{tend} time:hasBeginning :timeInst/{tstart}. :timeInst/{tstart} time:inXSDDateTimeStamp {tstart}. :timeInt/{tstart}-{tend} time:hasEnd :timeInst/{tend}. :timeInst/{tend}  time:inXSDDateTimeStamp {tend}.
+source		SELECT tstart, tend FROM employee_history;
+
+mappingId	MAPID-professor
+target		GRAPH :interval/{tstart}-{tend} { :employee/{empno} a :Employee . }
+source		SELECT empno, tstart, tend FROM employee_history;
+
+mappingId	MAPID-salary
+target		GRAPH :interval/{tstart}-{tend}  { :employee/{empno} :salary {salary} .  }
+source		SELECT empno, salary, tstart, tend FROM employee_history;
+
+mappingId	MAPID-title
+target		GRAPH :interval/{tstart}-{tend}  { :employee/{empno} :title {title} . }
+source		SELECT empno, title, tstart, tend FROM employee_history;
+
+mappingId	MAPID-department
+target		GRAPH :interval/{tstart}-{tend}  { :employee/{empno} :dept {deptno} . }
+source		SELECT empno, deptno, tstart, tend FROM employee_history;
+
+]]
+
