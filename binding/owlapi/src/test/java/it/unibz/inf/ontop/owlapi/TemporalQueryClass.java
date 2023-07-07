@@ -33,6 +33,7 @@ public class TemporalQueryClass extends AbstractOWLAPITest {
     @Test
     public void testBasic() throws Exception {
         String query =  "PREFIX : <http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#>\n" +
+                "PREFIX time: <http://www.w3.org/2006/time#>\n" +
                 "SELECT distinct ?v\n" +
                 "WHERE {\n" +
                 "  Graph ?i { ?p a :Employee .\n" +
