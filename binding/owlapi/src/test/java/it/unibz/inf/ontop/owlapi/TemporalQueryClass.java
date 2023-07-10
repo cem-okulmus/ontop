@@ -63,7 +63,7 @@ public class TemporalQueryClass extends AbstractOWLAPITest {
                 "  }  }  \n" +
                 "}";
 
-        String sql = checkReturnedValuesAndReturnSql(query, "v", ImmutableList.of(
+        String sql = checkReturnedValuesAndReturnSql(query, "i", ImmutableList.of(
                 "\"60000\"^^xsd:integer",
                 "\"70000\"^^xsd:integer"));
 

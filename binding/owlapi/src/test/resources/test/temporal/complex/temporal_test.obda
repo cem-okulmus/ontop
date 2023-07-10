@@ -1,0 +1,52 @@
+[PrefixDeclaration]
+:		http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#
+owl:		http://www.w3.org/2002/07/owl#
+rdf:		http://www.w3.org/1999/02/22-rdf-syntax-ns#
+xml:		http://www.w3.org/XML/1998/namespace
+xsd:		http://www.w3.org/2001/XMLSchema#
+obda:		https://w3id.org/obda/vocabulary#
+rdfs:		http://www.w3.org/2000/01/rdf-schema#
+quest:		http://obda.org/quest#
+time:       http://www.w3.org/2006/time#
+
+[MappingDeclaration] @collection [[
+
+mappingId	MAPID-interval-emp
+target		:interval/{tstart}/{tend} time:hasTime :timeInt/{tstart}/{tend}. :timeInt/{tstart}/{tend} a time:Interval. :timeInt/{tstart}/{tend} time:hasBeginning :timeInst/{tstart}. :timeInst/{tstart} time:inXSDDateTimeStamp {tstart}. :timeInt/{tstart}/{tend} time:hasEnd :timeInst/{tend}. :timeInst/{tend}  time:inXSDDateTimeStamp {tend}.
+source		SELECT tstart, tend FROM emp;
+
+mappingId	MAPID-interval-dep
+target		:interval/{tstart}/{tend} time:hasTime :timeInt/{tstart}/{tend}. :timeInt/{tstart}/{tend} a time:Interval. :timeInt/{tstart}/{tend} time:hasBeginning :timeInst/{tstart}. :timeInst/{tstart} time:inXSDDateTimeStamp {tstart}. :timeInt/{tstart}/{tend} time:hasEnd :timeInst/{tend}. :timeInst/{tend}  time:inXSDDateTimeStamp {tend}.
+source		SELECT tstart, tend FROM dep;
+
+
+mappingId	MAPID-employee
+target		GRAPH :interval/{tstart}/{tend} { :employee/{id} a :Employee . }
+source		SELECT id, tstart, tend FROM emp;
+
+mappingId	MAPID-name
+target		GRAPH :interval/{tstart}/{tend}  { :employee/{id} :name {name} .  }
+source		SELECT id, name, tstart, tend FROM emp;
+
+mappingId	MAPID-dep
+target		GRAPH :interval/{tstart}/{tend}  { :employee/{id} :dept {department} . }
+source		SELECT id, department, tstart, tend FROM emp;
+
+mappingId	MAPID-department
+target		GRAPH :interval/{tstart}/{tend}  { :department/{id} a :Department . }
+source		SELECT id, tstart, tend FROM dep;
+
+
+mappingId	MAPID-type
+target		GRAPH :interval/{tstart}/{tend}  { :department/{id} :type {type} . }
+source		SELECT id, type, tstart, tend FROM dep;
+
+
+mappingId	MAPID-location
+target		GRAPH :interval/{tstart}/{tend}  { :department/{id} :location {location} . }
+source		SELECT id, location, tstart, tend FROM dep;
+
+
+
+]]
+
