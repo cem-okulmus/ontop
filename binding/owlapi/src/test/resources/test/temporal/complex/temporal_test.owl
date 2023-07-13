@@ -15,7 +15,7 @@
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
-    // Data properties
+    // Object Properties
     //
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
@@ -25,19 +25,36 @@
 
     <!-- http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#dept -->
 
-    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#dept"/>
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#dept"/>
     
 
 
-    <!-- http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#salary -->
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
 
-    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#salary"/>
     
 
 
-    <!-- http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#title -->
+    <!-- http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#location -->
 
-    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#title"/>
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#location"/>
+    
+
+
+    <!-- http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#name -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#name"/>
+    
+
+
+    <!-- http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#type -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#type"/>
     
 
 

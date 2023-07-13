@@ -6,6 +6,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static org.junit.Assert.assertFalse;
 
 /**
@@ -46,42 +50,165 @@ public class MoreComplexTemporalQueries extends AbstractOWLAPITest {
                 "}";
 
         String sql = checkReturnedValuesAndReturnSql(query, "x", ImmutableList.of(
-                "\"e1\"^^xsd:string"));
+                "<http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#employee/e1>"));
 
 //        assertFalse(NO_SELF_LJ_OPTIMIZATION_MSG, containsMoreThanOneOccurrence(sql, "\"professors\""));
 //        assertFalse(NO_SELF_LJ_OPTIMIZATION_MSG, containsMoreThanOneOccurrence(sql, "\"PROFESSORS\""));
     }
 
 
+    private String temporalSparql(String input) throws  Exception{
+        String IRI = "<[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*>" ;
+        String VAR = "\\?[a-zA-Z0-9]+" ;
+        String CONST = "[a-zA-Z0-9]*:[a-zA-Z]+" ;
+        String QuotedCONST = "(?:'|[^'])*";
+        String matchedTerm = "("+VAR + "|" + IRI + "|" + CONST + "|"+ QuotedCONST + ")";
+        String triple = "^(\\s?" + matchedTerm + "\\s?" + matchedTerm + "\\s?" +matchedTerm + "\\s?[.])";
+
+        Pattern pSimple = Pattern.compile(triple + "\\s?@\\s?("+VAR+")\\s?\\Z");
+        Pattern pComplex = Pattern.compile(triple + "\\s?@\\s?("+VAR+")\\s?("+VAR+")\\s?\\Z");
+        Pattern overlapPoints = Pattern.compile("\\bOverlapPoints\\(\\s?("+VAR+")\\s?,\\s?("+VAR+")\\s?,\\s?("+VAR+")\\s?,\\s?("+VAR+")\\s?\\)\\s?");
+
+        String[] lines = input.split(System.lineSeparator());
 
 
-//    @Test
-//    public void testTemporalJoin() throws Exception {
-//        String query =  "PREFIX : <http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#>\n" +
-//                "PREFIX time: <http://www.w3.org/2006/time#>\n" +
-//                "SELECT distinct ?x \n" +
-//                "WHERE {\n" +
-//                "  Graph ?y { ?x a :Person .\n" +
-//                "  ?x :dept ?z . \n" +
-//                "  ?z :location 'barcelona' . \n" +
-//                "  }  \n" +
-//                "  Graph ?v { \n" +
-//                "  ?x :dept ?z1 . \n" +
-//                "  ?z1 :location 'madrid' . \n" +
-//                "  }  \n" +
-//                " ?y time:hasTime ?yi . \n"+
-//                " ?v time:hasTime ?vi . \n"+
-//                " ?vi time:hasEnd ?vie . \n"+
-//                " ?yi time:hasBeginning ?yib . \n"+
-//                " ?vie < ?yib ." +
-//                "}";
-//
-//        String sql = checkReturnedValuesAndReturnSql(query, "x", ImmutableList.of(
-//                "\"e1\"^^xsd:string"));
-//
+
+        ArrayList<String> newLines = new ArrayList<>();
+
+
+        boolean neverMatched = true;
+
+        for (String line : lines) {
+
+            Matcher mSimple = pSimple.matcher(line);
+            Matcher mComplex = pComplex.matcher(line);
+            Matcher mOverlapPoints = overlapPoints.matcher(line);
+
+
+            if (mSimple.find(0)){
+                neverMatched = false;
+                if (mSimple.groupCount() != 5) {
+                    System.out.println("Found groups:\n");
+
+                    for (int g = 0; g <= mSimple.groupCount(); g++){
+                        System.out.println(g +" "+ mSimple.group(g));
+                    }
+
+                    throw new Exception("could not match entire temporal triple expresssion"  + mSimple.groupCount());
+                }
+
+                String tripleMatched = mSimple.group(1);
+                String timeVar = mSimple.group(5);
+
+                // for each interval, we introduce the interval graph object, and start and end dates, and
+                // start and end points, needed in the W3C TIME ontology to connect the values with the interval
+
+                newLines.add("Graph " + timeVar + "Interval {");
+                newLines.add(tripleMatched);
+                newLines.add("}");
+                newLines.add(timeVar + "Interval time:hasInterval " +timeVar + " .");
+                newLines.add(timeVar + " time:hasBeginning " + timeVar +"StartPoint ." );
+                newLines.add(timeVar + "StartPoint time:inXSDDateTimeStamp " + timeVar +"Start ." );
+                newLines.add(timeVar + " time:hasEnd " + timeVar +"EndPoint ." );
+                newLines.add(timeVar + "EndPoint time:inXSDDateTimeStamp " + timeVar +"End ." );
+
+
+            } else if (mComplex.find(0)) {
+                neverMatched = false;
+                if (mComplex.groupCount() != 6) {
+                    System.out.println("Found groups:\n");
+
+                    for (int g = 0; g <= mComplex.groupCount(); g++){
+                        System.out.println(g +" "+ mComplex.group(g));
+                    }
+
+                    throw new Exception("could not match entire temporal triple expresssion"  + mComplex.groupCount());
+                }
+
+                String tripleMatched = mComplex.group(1);
+                String StartVar = mComplex.group(5);
+                String EndVar = mComplex.group(6);
+
+                String timeVar = StartVar + EndVar.replaceAll("\\?","");
+
+                // for each interval, we introduce the interval graph object, and start and end dates, and
+                // start and end points, needed in the W3C TIME ontology to connect the values with the interval
+
+                newLines.add("Graph " + timeVar + "Interval {");
+                newLines.add(tripleMatched);
+                newLines.add("}");
+                newLines.add(timeVar + "Interval time:hasTime " +timeVar + " .");
+                newLines.add(timeVar + " time:hasBeginning " + timeVar +"StartPoint ." );
+                newLines.add(timeVar + "StartPoint time:inXSDDateTimeStamp " + StartVar +" ." );
+                newLines.add(timeVar + " time:hasEnd " + timeVar +"EndPoint ." );
+                newLines.add(timeVar + "EndPoint time:inXSDDateTimeStamp " + EndVar +" ." );
+
+            } else if (mOverlapPoints.find(0)) {
+                neverMatched = false;
+                if (mOverlapPoints.groupCount() != 4) {
+                    System.out.println("Found groups:\n");
+
+                    for (int g = 0; g <= mOverlapPoints.groupCount(); g++){
+                        System.out.println(g +" "+ mOverlapPoints.group(g));
+                    }
+
+                    throw new Exception("could not match entire temporal triple expresssion"  + mOverlapPoints.groupCount());
+                }
+
+
+                String firstStart = mOverlapPoints.group(1);
+                String firstEnd = mOverlapPoints.group(2);
+                String secStart = mOverlapPoints.group(3);
+                String secEnd = mOverlapPoints.group(4);
+
+                newLines.add(" BIND (");
+                newLines.add("    IF("+secStart +">=" +firstStart +"," +secStart+","+firstStart+")");
+                newLines.add("  AS ?last");
+                newLines.add(") ");
+                newLines.add(" BIND (");
+                newLines.add("    IF("+secEnd+">="+firstEnd+","+firstEnd+","+secEnd+")");
+                newLines.add("  AS ?first");
+                newLines.add(")");
+                newLines.add("FILTER (?last < ?first) ");
+
+            }
+            else {
+                newLines.add(line);
+            }
+
+
+        }
+
+        if (neverMatched) {
+            System.out.println("Never matched anything.");
+        }
+
+
+        return String.join("\n ",newLines);
+    }
+
+    @Test
+    public void testTemporalJoin() throws Exception {
+
+        String query =  "PREFIX : <http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#>\n" +
+                "PREFIX time: <http://www.w3.org/2006/time#>\n" +
+                "SELECT distinct ?x \n" +
+                "WHERE {\n" +
+                " ?x :dept ?z . @ ?yStart ?yEnd \n" +
+                " ?z :location 'barcelona' . @ ?vStart ?vEnd \n" +
+                " OverlapPoints(?yStart,?yEnd,?vStart,?vEnd) \n" +
+                "}";
+
+        String temporalQuery = temporalSparql(query);
+        System.out.println("Parsed temporal Sparql query:\n "+ temporalQuery);
+
+
+        String sql = checkReturnedValuesAndReturnSql(temporalQuery, "x", ImmutableList.of(
+                "<http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#employee/e1>"));
+
 //        assertFalse(NO_SELF_LJ_OPTIMIZATION_MSG, containsMoreThanOneOccurrence(sql, "\"professors\""));
 //        assertFalse(NO_SELF_LJ_OPTIMIZATION_MSG, containsMoreThanOneOccurrence(sql, "\"PROFESSORS\""));
-//    }
+    }
 
 //    @Test
 //    public void testIntervalOutput() throws Exception {

@@ -3,8 +3,8 @@ Create Table dep (
    id  		VARCHAR(100), 
    type 	VARCHAR(100) NOT NULL,
    location	VARCHAR(100) NOT NULL,
-   tstart	DATE, 
-   tend		DATE,
+   tstart	DATE NOT NULL, 
+   tend		DATE NOT NULL,
    PRIMARY KEY(id, tstart, tend)
 );
 
@@ -14,8 +14,8 @@ CREATE TABLE emp (
     id           VARCHAR(100),
     name         VARCHAR(100) NOT NULL,
     department   VARCHAR(100),
-    tstart    DATE,
-    tend      DATE,
+    tstart    DATE NOT NULL,
+    tend      DATE NOT NULL,
     PRIMARY KEY(id,tstart,tend)
 );
 
