@@ -68,6 +68,7 @@ public class MoreComplexTemporalQueries extends AbstractOWLAPITest {
         Pattern pSimple = Pattern.compile(triple + "\\s?@\\s?("+VAR+")\\s?\\Z");
         Pattern pComplex = Pattern.compile(triple + "\\s?@\\s?("+VAR+")\\s?("+VAR+")\\s?\\Z");
         Pattern overlapPoints = Pattern.compile("\\bOverlapPoints\\(\\s?("+VAR+")\\s?,\\s?("+VAR+")\\s?,\\s?("+VAR+")\\s?,\\s?("+VAR+")\\s?\\)\\s?");
+        Pattern overlapInterval = Pattern.compile("\\bOverlap\\(\\s?("+VAR+")\\s?,\\s?("+VAR+")\\s?\\)\\s?");
 
         String[] lines = input.split(System.lineSeparator());
 
@@ -83,6 +84,7 @@ public class MoreComplexTemporalQueries extends AbstractOWLAPITest {
             Matcher mSimple = pSimple.matcher(line);
             Matcher mComplex = pComplex.matcher(line);
             Matcher mOverlapPoints = overlapPoints.matcher(line);
+            Matcher mOverlapInterval = overlapInterval.matcher(line);
 
 
             if (mSimple.find(0)){
@@ -162,11 +164,42 @@ public class MoreComplexTemporalQueries extends AbstractOWLAPITest {
                 String secEnd = mOverlapPoints.group(4);
 
                 newLines.add(" BIND (");
-                newLines.add("    IF("+secStart +">=" +firstStart +"," +secStart+","+firstStart+")");
+                newLines.add("    IF("+secStart +" >= " +firstStart +", xsd:date(" +secStart+"), xsd:date("+firstStart+"))");
                 newLines.add("  AS ?last");
                 newLines.add(") ");
                 newLines.add(" BIND (");
-                newLines.add("    IF("+secEnd+">="+firstEnd+","+firstEnd+","+secEnd+")");
+                newLines.add("    IF("+secEnd+" >= "+firstEnd+",xsd:date("+firstEnd+"),xsd:date("+secEnd+"))");
+                newLines.add("  AS ?first");
+                newLines.add(")");
+                newLines.add("FILTER (?last < ?first) ");
+
+            } else if (mOverlapInterval.find(0)) {
+                neverMatched = false;
+                if (mOverlapInterval.groupCount() != 2) {
+                    System.out.println("Found groups:\n");
+
+                    for (int g = 0; g <= mOverlapInterval.groupCount(); g++){
+                        System.out.println(g +" "+ mOverlapInterval.group(g));
+                    }
+
+                    throw new Exception("could not match entire temporal triple expresssion"  + mOverlapInterval.groupCount());
+                }
+
+
+                String first = mOverlapInterval.group(1);
+                String second = mOverlapInterval.group(2);
+
+                String firstStart = first + "Start";
+                String firstEnd = first +"End";
+                String secStart = second + "Start";
+                String secEnd = second + "End";
+
+                newLines.add(" BIND (");
+                newLines.add("    IF("+secStart +" >= " +firstStart +", xsd:date(" +secStart+"), xsd:date("+firstStart+"))");
+                newLines.add("  AS ?last");
+                newLines.add(") ");
+                newLines.add(" BIND (");
+                newLines.add("    IF("+secEnd+" >= "+firstEnd+",xsd:date("+firstEnd+"),xsd:date("+secEnd+"))");
                 newLines.add("  AS ?first");
                 newLines.add(")");
                 newLines.add("FILTER (?last < ?first) ");
@@ -188,15 +221,16 @@ public class MoreComplexTemporalQueries extends AbstractOWLAPITest {
     }
 
     @Test
-    public void testTemporalJoin() throws Exception {
+    public void testTemporalJoinEndPoints() throws Exception {
 
         String query =  "PREFIX : <http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#>\n" +
                 "PREFIX time: <http://www.w3.org/2006/time#>\n" +
+                "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n"+
                 "SELECT distinct ?x \n" +
                 "WHERE {\n" +
                 " ?x :dept ?z . @ ?yStart ?yEnd \n" +
                 " ?z :location 'barcelona' . @ ?vStart ?vEnd \n" +
-                " OverlapPoints(?yStart,?yEnd,?vStart,?vEnd) \n" +
+                " OverlapPoints(?yStart, ?yEnd, ?vStart, ?vEnd) \n" +
                 "}";
 
         String temporalQuery = temporalSparql(query);
@@ -204,11 +238,34 @@ public class MoreComplexTemporalQueries extends AbstractOWLAPITest {
 
 
         String sql = checkReturnedValuesAndReturnSql(temporalQuery, "x", ImmutableList.of(
-                "<http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#employee/e1>"));
-
-//        assertFalse(NO_SELF_LJ_OPTIMIZATION_MSG, containsMoreThanOneOccurrence(sql, "\"professors\""));
-//        assertFalse(NO_SELF_LJ_OPTIMIZATION_MSG, containsMoreThanOneOccurrence(sql, "\"PROFESSORS\""));
+                "<http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#employee/e1>",
+                "<http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#employee/e2>"));
     }
+
+
+    @Test
+    public void testTemporalJoinInterval() throws Exception {
+
+        String query =  "PREFIX : <http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#>\n" +
+                "PREFIX time: <http://www.w3.org/2006/time#>\n" +
+                "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n"+
+                "SELECT distinct ?x \n" +
+                "WHERE {\n" +
+                " ?x :dept ?z . @ ?y \n" +
+                " ?z :location 'barcelona' . @ ?v \n" +
+                " Overlap(?y, ?v) \n" +
+                "}";
+
+        String temporalQuery = temporalSparql(query);
+        System.out.println("Parsed temporal Sparql query:\n "+ temporalQuery);
+
+
+        String sql = checkReturnedValuesAndReturnSql(temporalQuery, "x", ImmutableList.of(
+                "<http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#employee/e1>",
+                "<http://www.semanticweb.org/user/ontologies/2016/8/untitled-ontology-84#employee/e2>"));
+    }
+
+
 
 //    @Test
 //    public void testIntervalOutput() throws Exception {
