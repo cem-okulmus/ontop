@@ -306,6 +306,9 @@ public interface DBFunctionSymbolFactory {
 
     DBFunctionSymbol getNullIgnoringDBGroupConcat(boolean isDistinct);
 
+
+    DBFunctionSymbol getTemporalCoalesce();
+
     /**
      * The first sub-term encodes the index of the term to return.
      * Such values correspond to the following sub-terms

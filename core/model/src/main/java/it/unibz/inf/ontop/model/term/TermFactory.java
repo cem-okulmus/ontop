@@ -588,6 +588,8 @@ public interface TermFactory {
 
 	ImmutableFunctionalTerm getDBGroupConcat(ImmutableTerm subTerm, String separator, boolean isDistinct);
 
+	ImmutableFunctionalTerm getDBTemporalCoalesce(ImmutableTerm subTerm, String separator);
+
 	// Topological functions
 	ImmutableTerm getDBSTWithin(ImmutableTerm arg1, ImmutableTerm arg2);
 	ImmutableTerm getDBSTContains(ImmutableTerm arg1, ImmutableTerm arg2);

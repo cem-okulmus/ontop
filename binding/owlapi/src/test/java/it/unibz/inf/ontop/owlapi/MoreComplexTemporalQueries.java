@@ -2,11 +2,15 @@ package it.unibz.inf.ontop.owlapi;
 
 
 import com.google.common.collect.ImmutableList;
+import it.unibz.inf.ontop.iq.IQ;
+import it.unibz.inf.ontop.iq.IQTree;
+import it.unibz.inf.ontop.owlapi.connection.OntopOWLStatement;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,7 +112,7 @@ public class MoreComplexTemporalQueries extends AbstractOWLAPITest {
                 newLines.add("Graph " + timeVar + "Interval {");
                 newLines.add(tripleMatched);
                 newLines.add("}");
-                newLines.add(timeVar + "Interval time:hasInterval " +timeVar + " .");
+                newLines.add(timeVar + "Interval time:hasTime " +timeVar + " .");
                 newLines.add(timeVar + " time:hasBeginning " + timeVar +"StartPoint ." );
                 newLines.add(timeVar + "StartPoint time:inXSDDateTimeStamp " + timeVar +"Start ." );
                 newLines.add(timeVar + " time:hasEnd " + timeVar +"EndPoint ." );
@@ -164,14 +168,14 @@ public class MoreComplexTemporalQueries extends AbstractOWLAPITest {
                 String secEnd = mOverlapPoints.group(4);
 
                 newLines.add(" BIND (");
-                newLines.add("    IF("+secStart +" >= " +firstStart +", xsd:date(" +secStart+"), xsd:date("+firstStart+"))");
+                newLines.add("    IF(xsd:date("+secStart +") >= xsd:date(" +firstStart +"), xsd:date(" +secStart+"), xsd:date("+firstStart+"))");
                 newLines.add("  AS ?last");
                 newLines.add(") ");
                 newLines.add(" BIND (");
-                newLines.add("    IF("+secEnd+" >= "+firstEnd+",xsd:date("+firstEnd+"),xsd:date("+secEnd+"))");
+                newLines.add("    IF(xsd:date("+secEnd+") >= xsd:date("+firstEnd+"),xsd:date("+firstEnd+"),xsd:date("+secEnd+"))");
                 newLines.add("  AS ?first");
                 newLines.add(")");
-                newLines.add("FILTER (?last < ?first) ");
+                newLines.add("FILTER (xsd:date(?last) < xsd:date(?first)) ");
 
             } else if (mOverlapInterval.find(0)) {
                 neverMatched = false;
@@ -195,14 +199,14 @@ public class MoreComplexTemporalQueries extends AbstractOWLAPITest {
                 String secEnd = second + "End";
 
                 newLines.add(" BIND (");
-                newLines.add("    IF("+secStart +" >= " +firstStart +", xsd:date(" +secStart+"), xsd:date("+firstStart+"))");
+                newLines.add("    IF( xsd:date("+secStart +") >= xsd:date(" +firstStart +"), xsd:date(" +secStart+"), xsd:date("+firstStart+"))");
                 newLines.add("  AS ?last");
                 newLines.add(") ");
                 newLines.add(" BIND (");
-                newLines.add("    IF("+secEnd+" >= "+firstEnd+",xsd:date("+firstEnd+"),xsd:date("+secEnd+"))");
+                newLines.add("    IF(xsd:date("+secEnd+") >= xsd:date("+firstEnd+"),xsd:date("+firstEnd+"),xsd:date("+secEnd+"))");
                 newLines.add("  AS ?first");
                 newLines.add(")");
-                newLines.add("FILTER (?last < ?first) ");
+                newLines.add("FILTER (xsd:date(?last) < xsd:date(?first)) ");
 
             }
             else {
@@ -258,6 +262,10 @@ public class MoreComplexTemporalQueries extends AbstractOWLAPITest {
 
         String temporalQuery = temporalSparql(query);
         System.out.println("Parsed temporal Sparql query:\n "+ temporalQuery);
+
+        IQTree executableQuery = returnExecutableIQ(temporalQuery);
+
+        System.out.println("The IQ produced for the query: \n"+ executableQuery.toString());
 
 
         String sql = checkReturnedValuesAndReturnSql(temporalQuery, "x", ImmutableList.of(

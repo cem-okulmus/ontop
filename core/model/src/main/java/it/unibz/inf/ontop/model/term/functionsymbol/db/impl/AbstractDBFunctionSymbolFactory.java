@@ -118,6 +118,8 @@ public abstract class AbstractDBFunctionSymbolFactory implements DBFunctionSymbo
     // Created in init()
     private DBFunctionSymbol distinctGroupConcat;
 
+    private DBFunctionSymbol temporalCoalesce;
+
     // Created in init()
     private DBFunctionSymbol rowUniqueStrFct;
     // Created in init()
@@ -442,6 +444,8 @@ public abstract class AbstractDBFunctionSymbolFactory implements DBFunctionSymbo
 
         nonDistinctGroupConcat = createDBGroupConcat(dbStringType, false);
         distinctGroupConcat = createDBGroupConcat(dbStringType, true);
+
+        temporalCoalesce = createDBCoalesce(dbStringType, false); // distinctness does not apply to coalesce
 
         rowUniqueStrFct = createDBRowUniqueStr();
         rowNumberFct = createDBRowNumber();
@@ -1119,6 +1123,12 @@ public abstract class AbstractDBFunctionSymbolFactory implements DBFunctionSymbo
     }
 
     @Override
+    public DBFunctionSymbol getTemporalCoalesce() {
+        return temporalCoalesce;
+    }
+
+
+    @Override
     public DBFunctionSymbol getDBIntIndex(int nbValues) {
         // TODO: cache it
         return new DBIntIndexFunctionSymbolImpl(dbIntegerType, rootDBType, nbValues);
@@ -1229,6 +1239,18 @@ public abstract class AbstractDBFunctionSymbolFactory implements DBFunctionSymbo
                         termConverter.apply(terms.get(1)),
                         termConverter.apply(terms.get(0))
                 ));
+    }
+
+
+    protected DBFunctionSymbol createDBCoalesce(DBTermType dbStringType, boolean isDistinct) {
+        return new TemporalCoalescing(dbStringType, isDistinct,
+                (terms, termConverter, termFactory) -> { terms.forEach(System.out::println); return String.format(
+                        "LISTAGG(%s%s,%s) WITHIN GROUP (ORDER BY %s)",
+                        isDistinct ? "DISTINCT " : "",
+                        termConverter.apply(terms.get(0)),
+                        termConverter.apply(terms.get(1)),
+                        termConverter.apply(terms.get(0))
+                );});
     }
 
     protected abstract DBTypeConversionFunctionSymbol createDateTimeNormFunctionSymbol(DBTermType dbDateTimestampType);

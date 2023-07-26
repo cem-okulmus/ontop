@@ -615,6 +615,12 @@ public class TermFactoryImpl implements TermFactory {
 				getDBStringConstant(separator));
     }
 
+	@Override
+	public ImmutableFunctionalTerm getDBTemporalCoalesce(ImmutableTerm subTerm, String separator) {
+		return getImmutableFunctionalTerm(dbFunctionSymbolFactory.getTemporalCoalesce(), subTerm,
+				getDBStringConstant(separator));
+	}
+
 	// Topological functions
     @Override
     public ImmutableTerm getDBSTWithin(ImmutableTerm arg1, ImmutableTerm arg2) {

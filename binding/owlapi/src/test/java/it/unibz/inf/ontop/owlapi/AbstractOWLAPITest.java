@@ -3,6 +3,7 @@ package it.unibz.inf.ontop.owlapi;
 import com.google.common.collect.ImmutableList;
 import it.unibz.inf.ontop.injection.OntopSQLOWLAPIConfiguration;
 import it.unibz.inf.ontop.iq.IQ;
+import it.unibz.inf.ontop.iq.IQTree;
 import it.unibz.inf.ontop.iq.UnaryIQTree;
 import it.unibz.inf.ontop.iq.node.NativeNode;
 import it.unibz.inf.ontop.owlapi.connection.OWLStatement;
@@ -120,6 +121,13 @@ public class AbstractOWLAPITest {
         ImmutableList<String> returnedValues = returnedValueBuilder.build();
         assertEquals(expectedValues, returnedValues);
         assertEquals(expectedValues.size(), i); // required due to possible nulls
+    }
+
+    protected IQTree returnExecutableIQ(String query) throws Exception{
+        OntopOWLStatement st = CONNECTION.createStatement();
+
+
+       return st.getExecutableQuery(query).getTree();
     }
 
     protected String checkReturnedValuesAndReturnSql(String query, String var, List<String> expectedValues) throws Exception {
